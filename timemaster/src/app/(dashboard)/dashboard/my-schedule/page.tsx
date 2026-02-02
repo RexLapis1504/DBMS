@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { MyScheduleClient } from "./client";
 
@@ -28,13 +28,13 @@ async function getTeacherSchedule(userId: string) {
 }
 
 export default async function MySchedulePage() {
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  if (!session?.user || session.user.role !== "TEACHER") {
+  if (!user || user.role !== "TEACHER") {
     redirect("/dashboard");
   }
 
-  const data = await getTeacherSchedule(session.user.id);
+  const data = await getTeacherSchedule(user.id);
 
   return <MyScheduleClient {...data} />;
 }

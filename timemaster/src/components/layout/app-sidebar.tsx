@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { useClerk } from "@clerk/nextjs";
 import {
   Calendar,
   Users,
@@ -15,6 +15,7 @@ import {
   Clock,
   UserCog,
   ChevronDown,
+  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -48,6 +49,7 @@ interface NavItem {
 const adminNavItems: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Timetable", href: "/dashboard/timetable", icon: Calendar },
+  { title: "AI Assistant", href: "/dashboard/ai", icon: Sparkles },
   { title: "Rooms", href: "/dashboard/rooms", icon: Building2 },
   { title: "Teachers", href: "/dashboard/teachers", icon: UserCog },
   { title: "Subjects", href: "/dashboard/subjects", icon: BookOpen },
@@ -79,6 +81,7 @@ interface AppSidebarProps {
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const { signOut } = useClerk();
 
   const getNavItems = () => {
     switch (user.role) {
@@ -215,7 +218,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ redirectUrl: "/sign-in" })}
               className="text-destructive focus:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />

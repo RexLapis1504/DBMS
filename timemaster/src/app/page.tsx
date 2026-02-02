@@ -87,12 +87,12 @@ export default function LandingPage() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <Link href="/login">
+          <Link href="/sign-in">
             <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
               Sign in
             </Button>
           </Link>
-          <Link href="/register">
+          <Link href="/sign-up">
             <Button className="bg-primary hover:bg-primary/90 glow-purple-sm">
               Get Started
             </Button>
@@ -131,7 +131,7 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/register">
+              <Link href="/sign-up">
                 <Button
                   size="lg"
                   className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-medium glow-purple"
@@ -140,7 +140,7 @@ export default function LandingPage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/login">
+              <Link href="/sign-in">
                 <Button
                   size="lg"
                   variant="outline"
@@ -345,7 +345,7 @@ export default function LandingPage() {
             <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
               Join SVKM NMIMS in managing timetables efficiently with TimeMaster.
             </p>
-            <Link href="/register">
+            <Link href="/sign-up">
               <Button
                 size="lg"
                 className="h-12 px-8 bg-primary hover:bg-primary/90 glow-purple"

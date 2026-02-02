@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
-import bcrypt from "bcryptjs";
 
 // Create PostgreSQL connection pool
 const pool = new Pool({
@@ -15,19 +14,9 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("Starting seed...");
 
-  // Create Admin User
-  const hashedPassword = await bcrypt.hash("admin123", 12);
-  const adminUser = await prisma.user.upsert({
-    where: { email: "admin@nmims.edu" },
-    update: {},
-    create: {
-      email: "admin@nmims.edu",
-      name: "Administrator",
-      password: hashedPassword,
-      role: "ADMIN",
-    },
-  });
-  console.log("Created admin user:", adminUser.email);
+  // Note: Users are now created via Clerk webhooks when they sign up.
+  // We no longer seed users directly since Clerk handles authentication.
+  // After signing up in Clerk, update user roles via the database or admin panel.
 
   // Create Rooms (from original SQL)
   const rooms = await Promise.all([
@@ -252,6 +241,11 @@ async function main() {
   console.log("Created sample students");
 
   console.log("Seed completed successfully!");
+  console.log("");
+  console.log("NOTE: Users are now created via Clerk. To make a user an admin:");
+  console.log("1. Sign up via the Clerk UI (/sign-up)");
+  console.log("2. Update the user's role in the database:");
+  console.log("   UPDATE \"User\" SET role = 'ADMIN' WHERE email = 'your-email@example.com';");
 }
 
 main()

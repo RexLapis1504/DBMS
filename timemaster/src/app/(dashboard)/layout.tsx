@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
+import { getCurrentUser } from "@/lib/auth";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Header } from "@/components/layout/header";
@@ -9,20 +10,26 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const { userId } = await auth();
 
-  if (!session?.user) {
-    redirect("/login");
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/sign-in");
   }
 
   return (
     <SidebarProvider>
       <AppSidebar
         user={{
-          name: session.user.name,
-          email: session.user.email,
-          image: session.user.image,
-          role: session.user.role,
+          name: user.name,
+          email: user.email,
+          image: user.imageUrl,
+          role: user.role,
         }}
       />
       <SidebarInset>
