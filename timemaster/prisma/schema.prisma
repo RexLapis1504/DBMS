@@ -1,0 +1,256 @@
+// TimeMaster - Timetable Management System
+// SVKM NMIMS
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTHENTICATION MODELS (NextAuth.js)
+// ============================================
+
+enum UserRole {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(STUDENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+
+  // Link to teacher or student profile
+  teacher Teacher?
+  student Student?
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ============================================
+// TIMETABLE MANAGEMENT MODELS
+// ============================================
+
+model Room {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  capacity     Int
+  roomType     RoomType @default(CLASSROOM)
+  building     String?
+  floor        Int?
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  timetableEntries TimetableEntry[]
+}
+
+enum RoomType {
+  CLASSROOM
+  LAB
+  AUDITORIUM
+  SEMINAR_HALL
+}
+
+model Teacher {
+  id           String   @id @default(cuid())
+  employeeId   String   @unique
+  name         String
+  email        String   @unique
+  phone        String?
+  department   String?
+  designation  String?
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Link to user account (optional - for login)
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Subjects this teacher can teach
+  subjects TeacherSubject[]
+
+  timetableEntries TimetableEntry[]
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  credits     Int      @default(3)
+  subjectType SubjectType @default(THEORY)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Teachers who can teach this subject
+  teachers TeacherSubject[]
+
+  timetableEntries TimetableEntry[]
+}
+
+enum SubjectType {
+  THEORY
+  PRACTICAL
+  TUTORIAL
+}
+
+// Many-to-many relation between Teacher and Subject
+model TeacherSubject {
+  id        String   @id @default(cuid())
+  teacherId String
+  subjectId String
+  createdAt DateTime @default(now())
+
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, subjectId])
+}
+
+model Class {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  program      String   // e.g., "MBA Tech", "BTech CE"
+  year         Int      // 1, 2, 3, 4
+  division     String?  // A, B, C
+  semester     Int      // 1-8
+  strength     Int      @default(60)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  students         Student[]
+  timetableEntries TimetableEntry[]
+}
+
+model Student {
+  id           String   @id @default(cuid())
+  rollNumber   String   @unique
+  name         String
+  email        String   @unique
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Class enrollment
+  classId String
+  class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  // Link to user account (optional - for login)
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model TimeSlot {
+  id        String   @id @default(cuid())
+  day       DayOfWeek
+  period    Int      // 1, 2, 3... (period number)
+  startTime String   // "09:00"
+  endTime   String   // "10:00"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  timetableEntries TimetableEntry[]
+
+  @@unique([day, period])
+  @@unique([day, startTime, endTime])
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+model TimetableEntry {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign keys
+  classId    String
+  subjectId  String
+  teacherId  String
+  roomId     String
+  timeSlotId String
+
+  // Relations
+  class    Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject  Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher  Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  room     Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  timeSlot TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
+
+  // Prevent conflicts
+  @@unique([classId, timeSlotId])      // A class can't have two subjects at the same time
+  @@unique([teacherId, timeSlotId])    // A teacher can't teach two classes at the same time
+  @@unique([roomId, timeSlotId])       // A room can't host two classes at the same time
+}
+
+// ============================================
+// AUDIT LOG (Optional - for tracking changes)
+// ============================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String   // CREATE, UPDATE, DELETE
+  entity    String   // Room, Teacher, etc.
+  entityId  String
+  userId    String?
+  changes   Json?
+  createdAt DateTime @default(now())
+}
