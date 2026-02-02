@@ -1,0 +1,23 @@
+"use client";
+
+import { SessionProvider } from "next-auth/react";
+import { Toaster } from "@/components/ui/sonner";
+import { ReactNode } from "react";
+
+export function Providers({ children }: { children: ReactNode }) {
+  return (
+    <SessionProvider>
+      {children}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#0a0a0a",
+            border: "1px solid #262626",
+            color: "#fafafa",
+          },
+        }}
+      />
+    </SessionProvider>
+  );
+}
