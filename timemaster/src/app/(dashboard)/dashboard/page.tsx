@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
 
@@ -36,15 +36,15 @@ async function getRecentActivity() {
 }
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const user = await getCurrentUser();
   const stats = await getStats();
   const recentActivity = await getRecentActivity();
 
   return (
     <DashboardContent
       user={{
-        name: session?.user?.name || "User",
-        role: session?.user?.role || "STUDENT",
+        name: user?.name || "User",
+        role: user?.role || "STUDENT",
       }}
       stats={stats}
       recentActivity={recentActivity}

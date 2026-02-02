@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { MyTimetableClient } from "./client";
 
@@ -31,13 +31,13 @@ async function getStudentTimetable(userId: string) {
 }
 
 export default async function MyTimetablePage() {
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  if (!session?.user || session.user.role !== "STUDENT") {
+  if (!user || user.role !== "STUDENT") {
     redirect("/dashboard");
   }
 
-  const data = await getStudentTimetable(session.user.id);
+  const data = await getStudentTimetable(user.id);
 
   return <MyTimetableClient {...data} />;
 }
