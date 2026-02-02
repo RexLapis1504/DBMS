@@ -1,7 +1,16 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+// Create PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// Create adapter and client
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Starting seed...");
@@ -225,7 +234,7 @@ async function main() {
       if (!name) continue;
 
       const rollNumber = `${cls.program.replace(/\s/g, "").substring(0, 4).toUpperCase()}${String(studentIndex * 10 + i + 1).padStart(3, "0")}`;
-      const email = `${name.toLowerCase()}@nmims.edu`;
+      const email = `${name.toLowerCase()}.${rollNumber.toLowerCase()}@nmims.edu`;
 
       await prisma.student.upsert({
         where: { rollNumber },
@@ -252,4 +261,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

@@ -1,6 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -22,8 +21,9 @@ export default {
 
         const { email, password } = validated.data;
 
-        // Import db dynamically to avoid edge runtime issues
+        // Import db and bcrypt dynamically to avoid edge runtime issues
         const { db } = await import("@/lib/db");
+        const bcrypt = await import("bcryptjs");
 
         const user = await db.user.findUnique({
           where: { email },

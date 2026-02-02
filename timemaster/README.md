@@ -60,11 +60,7 @@ Edit `.env` and fill in your values:
 # Database (Supabase PostgreSQL)
 DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:5432/postgres"
 
-# NextAuth.js
-# Generate secret: openssl rand -base64 32
-NEXTAUTH_SECRET="your-super-secret-key-generate-this"
-NEXTAUTH_URL="http://localhost:3000"
-```
+
 
 ### 4. Set Up Database
 

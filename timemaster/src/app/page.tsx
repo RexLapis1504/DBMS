@@ -165,21 +165,20 @@ export default function LandingPage() {
                 <div className="grid grid-cols-6 gap-2 w-full max-w-4xl">
                   {/* Simulated timetable grid */}
                   <div className="col-span-1" />
-                  {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day) => (
+                  {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, dayIndex) => (
                     <motion.div
                       key={day}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: 0.6 + Math.random() * 0.3 }}
+                      transition={{ delay: 0.6 + dayIndex * 0.05 }}
                       className="text-center text-sm font-medium text-muted-foreground py-2"
                     >
                       {day}
                     </motion.div>
                   ))}
                   {[1, 2, 3, 4, 5].map((period) => (
-                    <>
+                    <div key={`row-${period}`} className="contents">
                       <motion.div
-                        key={`time-${period}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.7 + period * 0.1 }}
@@ -187,26 +186,32 @@ export default function LandingPage() {
                       >
                         {8 + period}:00
                       </motion.div>
-                      {[1, 2, 3, 4, 5].map((day) => (
-                        <motion.div
-                          key={`${period}-${day}`}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.8 + (period * 5 + day) * 0.03 }}
-                          className={`rounded-lg p-3 ${
-                            Math.random() > 0.3
-                              ? "bg-primary/20 border border-primary/30"
-                              : "bg-secondary/50"
-                          }`}
-                        >
-                          {Math.random() > 0.3 && (
-                            <div className="text-xs text-primary font-medium">
-                              {["DBMS", "CN", "DSA", "WP", "MM"][Math.floor(Math.random() * 5)]}
-                            </div>
-                          )}
-                        </motion.div>
-                      ))}
-                    </>
+                      {[1, 2, 3, 4, 5].map((day) => {
+                        // Use deterministic pattern instead of random
+                        const hasClass = (period + day) % 3 !== 0;
+                        const subjects = ["DBMS", "CN", "DSA", "WP", "MM"];
+                        const subjectIndex = (period + day) % 5;
+                        return (
+                          <motion.div
+                            key={`${period}-${day}`}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.8 + (period * 5 + day) * 0.03 }}
+                            className={`rounded-lg p-3 ${
+                              hasClass
+                                ? "bg-primary/20 border border-primary/30"
+                                : "bg-secondary/50"
+                            }`}
+                          >
+                            {hasClass && (
+                              <div className="text-xs text-primary font-medium">
+                                {subjects[subjectIndex]}
+                              </div>
+                            )}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   ))}
                 </div>
               </div>
